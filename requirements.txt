@@ -1,0 +1,8 @@
+Flask
+requests
+python-dotenv
+crewai
+openai
+gunicorn
+urllib3
+'crewai[tools]'
