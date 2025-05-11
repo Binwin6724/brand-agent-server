@@ -82,6 +82,9 @@ def askGPTAgent(prompt):
     response = requests.post(base_url, headers=headers, json=data)
     return response.text
 
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({'message': 'Hello, World!'}), 200
 
 @app.route('/search', methods=['GET'])
 def search():
