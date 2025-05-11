@@ -1,0 +1,12 @@
+research_task:
+  description: >
+    Conduct a thorough research about the brand {brand_name}
+    Go through the {ad_copies} and extract the most relevant information.
+    Give Overall Tone and Personality, Voice and Language, Positioning & Key Themes,
+    Call-to-Action (CTA) Structure {ad_ctas}, Style & Formatting Nuances, Consistent Brand Identity Cues,
+    and Key Takeaways for On-Brand Copy
+  expected_output: >
+    Give me a detailed analysis of the brand's marketing strategy and brand voice.
+    Give the result in markdown format as a plain text.
+    Dont include ```markdown``` in the response.
+  agent: researcher
