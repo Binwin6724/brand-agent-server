@@ -289,7 +289,7 @@ def wordware():
         print("Response headers:", response.headers)
         print("Response text:", response.text)
 
-        if response.headers.get('Content-Type') == 'application/x-ndjson':
+        if response.headers.get('Content-Type') == 'application/x-ndjson; charset=utf-8':
             for line in response.text.strip().split("\n"):
                 try:
                     ndjson_data.append(json.loads(line))
@@ -297,7 +297,6 @@ def wordware():
                     print(f"Skipping invalid line: {line}")
         else:
             print("Unexpected content type:", response.headers.get('Content-Type'))
-            print(response.text)
         
         # Return the raw response text without trying to parse as JSON
         return jsonify({
