@@ -282,15 +282,26 @@ def wordware():
         }
         
         response = requests.request("POST", url, headers=headers, data=payload)
+        ndjson_data = []
         
         # Print response for debugging
         print("Response status code:", response.status_code)
         print("Response headers:", response.headers)
         print("Response text:", response.text)
+
+        if response.headers.get('Content-Type') == 'application/x-ndjson':
+            for line in response.text.strip().split("\n"):
+                try:
+                    ndjson_data.append(json.loads(line))
+                except json.JSONDecodeError as e:
+                    print(f"Skipping invalid line: {line}")
+        else:
+            print("Unexpected content type:", response.headers.get('Content-Type'))
+            print(response.text)
         
         # Return the raw response text without trying to parse as JSON
         return jsonify({
-            'raw_response': response.text,
+            'raw_response': ndjson_data,
             'status_code': response.status_code
         }), 200
     except Exception as e:
