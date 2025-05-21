@@ -256,28 +256,21 @@ def wordware():
     try:
         data = request.json
         
-        url = "https://app.wordware.ai/api/released-app/828522f5-bef7-4466-b943-02b3e5e1f624/run"
+        url = "https://app.wordware.ai/api/released-app/7f724839-fbe2-45be-a567-4a780203b625/run"
         
         payload = json.dumps({
             "inputs": {
-                "CSV file": {
-                    "type": "file",
-                    "file_type": data.get("file_type", "text/csv"),
-                    "file_url": data.get("file_url"),
-                    "file_name": data.get("file_name")
-                },
-                "language": data.get("language"),
-                "headlineLength": data.get("headlineLength", 42),
-                "bodyLength": data.get("bodyLength", 42),
-                "acceptableCTA": data.get("acceptableCTA", [])
+                "human_prompt_start": data.get("human_prompt_start"),
+                "linkedIn_brand_guidelines": data.get("linkedIn_brand_guidelines"),
+                "feedback_input": data.get("feedback_input")
             },
-            "version": "^1.0"
+            "version": "^3.1"
         })
 
         print("Payload - ", payload)
         
         headers = {
-            'Authorization': 'Bearer ww-AwWtWueAm63IRKfeHiIm8gL7CsoCbWXT5shAfxIBu34KOZ6p8X12if',
+            'Authorization': 'Bearer ww-ECCqrRGp33jciiU6JWPYSCwI7yIz0XESRNKORcFtHR1y5lTNSF8Dyi',
             'Content-Type': 'application/json'
         }
         
