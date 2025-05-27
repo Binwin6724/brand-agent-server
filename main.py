@@ -262,9 +262,13 @@ def wordware():
             "inputs": {
                 "human_prompt_start": data.get("human_prompt_start"),
                 "linkedIn_brand_guidelines": data.get("linkedIn_brand_guidelines"),
-                "feedback_input": data.get("feedback_input")
+                "feedback_input": data.get("feedback_input"),
+                "link_to_article": data.get("article_link"),
+                "feedback_bool": data.get("feedback_bool"),
+                "previous_generated_body": data.get("previous_generated_body"),
+                "previous_generated_cta": data.get("previous_generated_cta")
             },
-            "version": "^3.1"
+            "version": "^4.4"
         })
 
         print("Payload - ", payload)
@@ -277,11 +281,6 @@ def wordware():
         response = requests.request("POST", url, headers=headers, data=payload)
         ndjson_data = []
         
-        # Print response for debugging
-        print("Response status code:", response.status_code)
-        print("Response headers:", response.headers)
-        print("Response text:", response.text)
-
         if response.headers.get('Content-Type') == 'application/x-ndjson; charset=utf-8':
             for line in response.text.strip().split("\n"):
                 try:
@@ -291,7 +290,6 @@ def wordware():
         else:
             print("Unexpected content type:", response.headers.get('Content-Type'))
         
-        # Return the raw response text without trying to parse as JSON
         return jsonify({
             'raw_response': ndjson_data,
             'status_code': response.status_code
