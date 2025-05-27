@@ -1,5 +1,5 @@
 from brand_awareness_agent.src.brand_awareness_agent.main import BrandAwarenessFlow
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import requests
 import json
 import datetime
@@ -257,7 +257,8 @@ def wordware():
         data = request.json
         
         url = "https://app.wordware.ai/api/released-app/7f724839-fbe2-45be-a567-4a780203b625/run"
-        
+                
+
         payload = json.dumps({
             "inputs": {
                 "human_prompt_start": data.get("human_prompt_start"),
@@ -266,9 +267,15 @@ def wordware():
                 "link_to_article": data.get("article_link"),
                 "feedback_bool": data.get("feedback_bool"),
                 "previous_generated_body": data.get("previous_generated_body"),
-                "previous_generated_cta": data.get("previous_generated_cta")
+                "previous_generated_cta": data.get("previous_generated_cta"),
+                "file_upload": {
+                    "type": "file",
+                    "file_type": "application/pdf",
+                    "file_url": request.host_url + "uploads/" + data.get("pdf_file_path"),
+                    "file_name": data.get("pdf_file_path")
+                }
             },
-            "version": "^4.4"
+            "version": "^4.5"
         })
 
         print("Payload - ", payload)
@@ -297,5 +304,51 @@ def wordware():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/upload-pdf', methods=['POST'])
+def upload_pdf():
+    try:
+        data = request.get_json()
+        if not data or 'fileName' not in data or 'base64Data' not in data:
+            return jsonify({"error": "Missing required fields (fileName or base64Data)"}), 400
+
+        file_name = data['fileName']
+        base64_data = data['base64Data']
+        
+        # Create uploads directory if it doesn't exist
+        upload_dir = 'uploads'
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+
+        # Save the PDF file
+        file_path = os.path.join(upload_dir, file_name)
+        
+        # Remove "data:application/pdf;base64," prefix if present
+        if base64_data.startswith('data:application/pdf;base64,'):
+            base64_data = base64_data.split(',')[1]
+
+        # Decode and save the file
+        try:
+            import base64
+            pdf_data = base64.b64decode(base64_data)
+            with open(file_path, 'wb') as f:
+                f.write(pdf_data)
+        except Exception as e:
+            return jsonify({"error": f"Failed to decode PDF: {str(e)}"}), 400
+
+        # Return both the file name and path
+        return jsonify({
+            "message": "PDF uploaded successfully",
+            "file_path": file_path,
+            "file_name": file_name
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/uploads/<path:filename>')
+def serve_pdf(filename):
+    return send_from_directory('uploads', filename)
+
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
