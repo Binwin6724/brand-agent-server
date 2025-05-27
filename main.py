@@ -273,7 +273,8 @@ def wordware():
                     "file_type": "application/pdf",
                     "file_url": request.host_url + "uploads/" + data.get("pdf_file_path"),
                     "file_name": data.get("pdf_file_path")
-                }
+                },
+                "file_upload_bool": data.get("file_upload_bool")
             },
             "version": "^4.5"
         })
