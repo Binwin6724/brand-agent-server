@@ -256,7 +256,7 @@ def wordware():
     try:
         data = request.json
         
-        url = "https://app.wordware.ai/api/released-app/7f724839-fbe2-45be-a567-4a780203b625/run"
+        url = "https://app.wordware.ai/api/released-app/2ba17d13-5412-4bd9-91a7-10a3202e09c6/run"
                 
 
         payload = json.dumps({
@@ -276,7 +276,7 @@ def wordware():
                 },
                 "file_upload_bool": data.get("file_upload_bool")
             },
-            "version": "^4.5"
+            "version": "^1.0"
         })
 
         print("Payload - ", payload)
