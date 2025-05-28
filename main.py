@@ -276,7 +276,7 @@ def wordware():
                 },
                 "file_upload_bool": data.get("file_upload_bool")
             },
-            "version": "^1.0"
+            "version": "^1.1"
         })
 
         print("Payload - ", payload)
