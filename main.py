@@ -251,8 +251,8 @@ def brand():
 
     return jsonify({'response': response}), 200
 
-@app.route('/wordware', methods=['POST'])
-def wordware():
+@app.route('/wordware-linkedin', methods=['POST'])
+def wordware_linkedin():
     try:
         data = request.json
         
@@ -305,6 +305,68 @@ def wordware():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/wordware-facebook', methods=['POST'])
+def wordware_facebook():
+    try:
+        data = request.json
+        
+        url = "https://app.wordware.ai/api/released-app/8862e246-ddf2-48ea-a55c-8876072aad1a/run"
+                
+
+        payload = json.dumps({
+            "inputs": {
+                "human_prompt_start": data.get("human_prompt_start"),
+                "facebook_brand_guidelines": data.get("facebook_brand_guidelines"),
+                "feedback_input": data.get("feedback_input"),
+                "link_to_article": data.get("link_to_article"),
+                "feedback_bool": data.get("feedback_bool"),
+                "previous_generated_body": data.get("previous_generated_body"),
+                "previous_generated_cta": data.get("previous_generated_cta"),
+                "file_upload": {
+                    "type": "file",
+                    "file_type": "application/pdf",
+                    "file_url": request.host_url + "uploads/" + data.get("pdf_file_path"),
+                    "file_name": data.get("pdf_file_path")
+                },
+                "file_upload_bool": data.get("file_upload_bool"),
+                "previous_generated_headline": data.get("previous_generated_headline"),
+                "image": {
+                    "type": "image",
+                    "image_url": request.host_url + "uploads/" + data.get("image_path")
+                },
+                "image_upload_bool": data.get("image_upload_bool"),
+                "image_generation_bool": data.get("image_generation_bool")
+            },
+            "version": "^2.2"
+        })
+
+        print("Payload - ", payload)
+        
+        headers = {
+            'Authorization': 'Bearer ww-ECCqrRGp33jciiU6JWPYSCwI7yIz0XESRNKORcFtHR1y5lTNSF8Dyi',
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.request("POST", url, headers=headers, data=payload)
+        ndjson_data = []
+        
+        if response.headers.get('Content-Type') == 'application/x-ndjson; charset=utf-8':
+            for line in response.text.strip().split("\n"):
+                try:
+                    ndjson_data.append(json.loads(line))
+                except json.JSONDecodeError as e:
+                    print(f"Skipping invalid line: {line}")
+        else:
+            print("Unexpected content type:", response.headers.get('Content-Type'))
+        
+        return jsonify({
+            'raw_response': ndjson_data,
+            'status_code': response.status_code
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+   
+
 @app.route('/upload-pdf', methods=['POST'])
 def upload_pdf():
     try:
@@ -347,8 +409,52 @@ def upload_pdf():
         return jsonify({"error": str(e)}), 500
 
 
+
+@app.route('/upload-image', methods=['POST'])
+def upload_image():
+    try:
+        data = request.get_json()
+        if not data or 'fileName' not in data or 'base64Data' not in data:
+            return jsonify({"error": "Missing required fields (fileName or base64Data)"}), 400
+
+        file_name = data['fileName']
+        base64_data = data['base64Data']
+        
+        # Create uploads directory if it doesn't exist
+        upload_dir = 'uploads'
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+
+        # Save the image file
+        file_path = os.path.join(upload_dir, file_name)
+        
+        # Handle common image data URL formats
+        if base64_data.startswith('data:image/'):
+            # Extract the base64 part after the comma
+            base64_data = base64_data.split(',')[1]
+
+        # Decode and save the file
+        try:
+            import base64
+            image_data = base64.b64decode(base64_data)
+            with open(file_path, 'wb') as f:
+                f.write(image_data)
+        except Exception as e:
+            return jsonify({"error": f"Failed to decode image: {str(e)}"}), 400
+
+        # Return both the file name and path
+        return jsonify({
+            "message": "Image uploaded successfully",
+            "file_path": file_path,
+            "file_name": file_name
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/uploads/<path:filename>')
-def serve_pdf(filename):
+def serve_file(filename):
     return send_from_directory('uploads', filename)
 
 if __name__ == '__main__':
