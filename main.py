@@ -256,7 +256,7 @@ def wordware_linkedin():
     try:
         data = request.json
         
-        url = "https://app.wordware.ai/api/released-app/2ba17d13-5412-4bd9-91a7-10a3202e09c6/run"
+        url = "https://app.wordware.ai/api/released-app/5272a3a0-0515-4d2a-b067-d37671edefab/run"
                 
 
         payload = json.dumps({
@@ -276,13 +276,13 @@ def wordware_linkedin():
                 },
                 "file_upload_bool": data.get("file_upload_bool")
             },
-            "version": "^1.1"
+            "version": "^1.0"
         })
 
         print("Payload - ", payload)
         
         headers = {
-            'Authorization': 'Bearer ww-ECCqrRGp33jciiU6JWPYSCwI7yIz0XESRNKORcFtHR1y5lTNSF8Dyi',
+            'Authorization': 'Bearer ww-JNRmL8OhSbSJgqN2Qoh17Q9Yt5GVxgb6aX7h1fm6TGZPGE9TPmtiCG',
             'Content-Type': 'application/json'
         }
         
@@ -310,7 +310,7 @@ def wordware_facebook():
     try:
         data = request.json
         
-        url = "https://app.wordware.ai/api/released-app/8862e246-ddf2-48ea-a55c-8876072aad1a/run"
+        url = "https://app.wordware.ai/api/released-app/fc87e47b-0ed6-488d-87d9-5aa7ac377089/run"
                 
 
         payload = json.dumps({
@@ -337,13 +337,13 @@ def wordware_facebook():
                 "image_upload_bool": data.get("image_upload_bool"),
                 "image_generation_bool": data.get("image_generation_bool")
             },
-            "version": "^2.2"
+            "version": "^1.1"
         })
 
         print("Payload - ", payload)
         
         headers = {
-            'Authorization': 'Bearer ww-ECCqrRGp33jciiU6JWPYSCwI7yIz0XESRNKORcFtHR1y5lTNSF8Dyi',
+            'Authorization': 'Bearer ww-JNRmL8OhSbSJgqN2Qoh17Q9Yt5GVxgb6aX7h1fm6TGZPGE9TPmtiCG',
             'Content-Type': 'application/json'
         }
         
@@ -458,4 +458,4 @@ def serve_file(filename):
     return send_from_directory('uploads', filename)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
