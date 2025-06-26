@@ -309,9 +309,8 @@ def wordware_linkedin():
 def wordware_facebook():
     try:
         data = request.json
-        
+
         url = "https://app.wordware.ai/api/released-app/fc87e47b-0ed6-488d-87d9-5aa7ac377089/run"
-                
 
         payload = json.dumps({
             "inputs": {
@@ -340,32 +339,84 @@ def wordware_facebook():
             "version": "^1.1"
         })
 
-        print("Payload - ", payload)
-        
         headers = {
             'Authorization': 'Bearer ww-JNRmL8OhSbSJgqN2Qoh17Q9Yt5GVxgb6aX7h1fm6TGZPGE9TPmtiCG',
             'Content-Type': 'application/json'
         }
-        
-        response = requests.request("POST", url, headers=headers, data=payload)
+
+        response = requests.post(url, headers=headers, data=payload)
         ndjson_data = []
-        
-        if response.headers.get('Content-Type') == 'application/x-ndjson; charset=utf-8':
-            for line in response.text.strip().split("\n"):
+
+        # Handle streaming/chunked NDJSON
+        if response.headers.get('Content-Type', '').startswith('application/x-ndjson'):
+            for line in response.text.strip().split('\n'):
                 try:
                     ndjson_data.append(json.loads(line))
-                except json.JSONDecodeError as e:
-                    print(f"Skipping invalid line: {line}")
+                except json.JSONDecodeError:
+                    print(f"Skipping invalid JSON line: {line}")
         else:
             print("Unexpected content type:", response.headers.get('Content-Type'))
-        
+
+        # Step 1: Accumulate structured generation chunks
+        structured_data = {}
+        current_label = None
+        accumulated_value = ""
+
+        for chunk in ndjson_data:
+            value = chunk.get("value", {})
+
+            # Start of a new structured generation
+            if value.get("isStructured") and value.get("type") == "generation":
+                current_label = value.get("label")
+                accumulated_value = ""
+
+            # Accumulate partial value
+            elif value.get("type") == "chunk" and current_label:
+                accumulated_value += value.get("value", "")
+
+            # End of structured generation
+            elif value.get("type") == "generation" and value.get("state") == "done" and value.get("label") == current_label:
+                try:
+                    structured_data[current_label] = json.loads(accumulated_value)
+                except json.JSONDecodeError as e:
+                    print(f"Failed to parse JSON for {current_label}: {e}")
+                current_label = None
+                accumulated_value = ""
+
+        # Step 2: Add image or tool outputs
+        for chunk in ndjson_data:
+            value = chunk.get("value", {})
+            if isinstance(value, dict) and "output" in value:
+                output = value["output"]
+                if isinstance(output, dict):
+                    structured_data.update(output)
+
+        # Step 3: Build final parsed response
+        parsed_response = {
+            "facebookAdBody": structured_data.get("facebook_ad", {}).get("facebook_ad_body", ''),
+            "facebookAdCTA": structured_data.get("facebook_ad", {}).get("facebook_ad_call_to_action", ''),
+            "facebookHeadline": structured_data.get("facebook_ad", {}).get("facebook_ad_headline", ''),
+            "horizonId": "-".join([
+                structured_data.get("horizon-id", {}).get("facebook_post_body", ''),
+                structured_data.get("horizon-id", {}).get("facebook_post_call_to_action", ''),
+                structured_data.get("horizon-id", {}).get("product", ''),
+                structured_data.get("horizon-id", {}).get("quarter", ''),
+                structured_data.get("horizon-id", {}).get("segment", '')
+            ]),
+            "generatedImage": structured_data.get("Image generation", {}).get("output", {}).get("image_url", '') or
+                              structured_data.get("tool_CvtwP6fKNk2Oq6Vv", {}).get("output", {}).get("image_url", ''),
+            "webscrapeData": structured_data.get("Webscrape", {}).get("output", '')
+        }
+
+        # Final output to return
         return jsonify({
-            'raw_response': ndjson_data,
-            'status_code': response.status_code
+            "parsed_response": parsed_response,
+            "status_code": response.status_code
         }), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-   
+
 
 @app.route('/upload-pdf', methods=['POST'])
 def upload_pdf():
