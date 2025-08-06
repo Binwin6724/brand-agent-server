@@ -336,7 +336,7 @@ def wordware_facebook():
                 "image_upload_bool": data.get("image_upload_bool"),
                 "image_generation_bool": data.get("image_generation_bool")
             },
-            "version": "^1.1"
+            "version": "^2.0"
         })
 
         headers = {
